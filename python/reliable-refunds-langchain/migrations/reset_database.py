@@ -28,7 +28,7 @@ sample_purchases = [
     {
         "order_id": 3,
         "item": "Samsung QLED 4K TV ",
-        "order_date": (base_date - timedelta(days=2)).strftime("%Y-%m-%-d"),
+        "order_date": (base_date - timedelta(days=2)).strftime("%Y-%m-%d"),
         "price": Decimal("1199.99"),
         "order_status": schema.OrderStatus.PURCHASED.value,
     },

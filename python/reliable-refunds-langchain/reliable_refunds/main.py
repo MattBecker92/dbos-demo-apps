@@ -18,8 +18,8 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from psycopg_pool import ConnectionPool
 from pydantic import BaseModel
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+# from sendgrid import SendGridAPIClient
+# from sendgrid.helpers.mail import Mail
 from sqlalchemy import text, make_url
 from typing_extensions import TypedDict
 
@@ -39,14 +39,16 @@ DBOS(fastapi=app, config=config)
 
 APPROVAL_TIMEOUT_SEC = 60 * 60 * 24 * 7  # One week timeout for manual review
 
-sg_api_key = os.environ.get("SENDGRID_API_KEY")
-assert sg_api_key, "Error: SENDGRID_API_KEY is not set"
+# sg_api_key = os.environ.get("SENDGRID_API_KEY")
+# assert sg_api_key, "Error: SENDGRID_API_KEY is not set"
 
-from_email = os.environ.get("SENDGRID_FROM_EMAIL")
-assert from_email, "Error: SENDGRID_FROM_EMAIL is not set"
+from_email = "testemail@stthomas.edu"
+# from_email = os.environ.get("SENDGRID_FROM_EMAIL")
+# assert from_email, "Error: SENDGRID_FROM_EMAIL is not set"
 
-admin_email = os.environ.get("ADMIN_EMAIL", None)
-assert admin_email, "Error: ADMIN_EMAIL is not set"
+admin_email = "adminemail@stthomas.edu"
+# admin_email = os.environ.get("ADMIN_EMAIL", None)
+# assert admin_email, "Error: ADMIN_EMAIL is not set"
 
 callback_domain = os.environ.get("DBOS_APP_HOSTNAME", "http://localhost:8000")
 
@@ -108,24 +110,29 @@ def approval_workflow(purchase: Purchase):
 # to the approval workflow to approve or deny a refund.
 @DBOS.step()
 def send_email(purchase: Purchase):
-    content = f"{callback_domain}/approval/{DBOS.workflow_id}"
-    msg = Template(Path(os.path.join(html_dir, "email.html")).read_text()).substitute(
-        purchaseid=purchase.order_id,
-        purchaseitem=purchase.item,
-        orderdate=purchase.order_date,
-        price=purchase.price,
-        content=content,
-        datetime=time.strftime("%Y-%m-%d %H:%M:%S %Z"),
-    )
+    # content = f"{callback_domain}/approval/{DBOS.workflow_id}"
+    print("\n================ EMAIL (SIMULATED) ================\n")
+    print("To: customer@stthomas.edu")
+    print("Subject: Refund Approval Needed")
+    print("Body:")
+    print(f"""
+Hello,
 
-    message = Mail(
-        from_email=from_email,
-        to_emails=admin_email,
-        subject="Refund Validation",
-        html_content=msg,
-    )
-    email_client = SendGridAPIClient(sg_api_key)
-    email_client.send(message)
+A refund request requires approval.
+
+Order ID: {purchase.order_id}
+Item: {purchase.item}
+Price: ${purchase.price}
+
+Approve or deny the refund using the following link:
+http://localhost:8000/approve/{purchase.order_id}
+
+(This is a simulated email — no real email was sent.)
+""")
+    print("===================================================\n")
+
+    # email_client = SendGridAPIClient(sg_api_key)
+    # email_client.send(message)
     DBOS.logger.info(f"Message sent from {from_email} to {admin_email}")
 
 
